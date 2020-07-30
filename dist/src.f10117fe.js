@@ -131,8 +131,17 @@ function () {
   function View(parent, model) {
     this.parent = parent;
     this.model = model;
+    this.regions = {};
     this.bindModel();
   }
+
+  View.prototype.regionsMap = function () {
+    return {};
+  };
+
+  View.prototype.eventsMap = function () {
+    return {};
+  };
 
   View.prototype.bindModel = function () {
     var _this = this;
@@ -160,11 +169,25 @@ function () {
     }
   };
 
+  View.prototype.mapRegions = function (fragment) {
+    var regionsMap = this.regionsMap();
+
+    for (var key in regionsMap) {
+      var selector = regionsMap[key];
+      var element = fragment.querySelector(selector);
+
+      if (element) {
+        this.regions[key] = element;
+      }
+    }
+  };
+
   View.prototype.render = function () {
     this.parent.innerHTML = '';
     var templateElement = document.createElement('template');
     templateElement.innerHTML = this.template();
     this.bindEvents(templateElement.content);
+    this.mapRegions(templateElement.content);
     this.parent.append(templateElement.content);
   };
 
@@ -232,18 +255,23 @@ function (_super) {
       _this.model.setRandomAge();
     };
 
+    _this.onSaveClick = function () {
+      _this.model.save();
+    };
+
     return _this;
   }
 
   UserForm.prototype.eventsMap = function () {
     return {
       'click:.set-name': this.onSetNameClick,
-      'click:.set-age': this.onSetAgeClick
+      'click:.set-age': this.onSetAgeClick,
+      'click:.save-model': this.onSaveClick
     };
   };
 
   UserForm.prototype.template = function () {
-    return "\n      <div>\n        <h1>UserForm</h1>\n        <div>User name: " + this.model.get('name') + "</div>\n        <div>User age: " + this.model.get('age') + "</div>\n        <input />\n        <button class=\"set-name\">Change Name</button>\n        <button class=\"set-age\">Set Random Age</button>\n      </div>\n    ";
+    return "\n      <div>\n        <input placeholder=\"" + this.model.get('name') + "\" />\n        <button class=\"set-name\">Change Name</button>\n\t\t\t\t<button class=\"set-age\">Set Random Age</button>\n\t\t\t\t<button class=\"save-model\">Save User</button>\n      </div>\n    ";
   };
 
   return UserForm;
